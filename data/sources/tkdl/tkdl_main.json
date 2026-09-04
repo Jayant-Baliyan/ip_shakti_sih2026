@@ -1,0 +1,39 @@
+{
+  "source": "tkdl.res.in",
+  "url": "https://tkdl.res.in",
+  "fetched_at": "2026-09-02",
+  "status": "partially_accessible",
+  "content_type": "text/html",
+  "access_notes": "TKDL requires authorized access for full database. Public pages provide overview information only.",
+  "key_sections": {
+    "home": "https://tkdl.res.in/tkdl/langdefault/common/Home.asp?GL=Eng",
+    "about": "https://tkdl.res.in/tkdl/langdefault/common/Aboutus.asp?GL=Eng",
+    "objectives": "https://tkdl.res.in/tkdl/langdefault/common/Objective.asp?GL=Eng",
+    "coverage": "https://tkdl.res.in/tkdl/langdefault/common/Coverage.asp?GL=Eng",
+    "achievements": "https://tkdl.res.in/tkdl/langdefault/common/Achievements.asp?GL=Eng",
+    "publications": "https://tkdl.res.in/tkdl/langdefault/common/Publications.asp?GL=Eng",
+    "patents": "https://tkdl.res.in/tkdl/langdefault/common/Patents.asp?GL=Eng",
+    "faq": "https://tkdl.res.in/tkdl/langdefault/common/FAQ.asp?GL=Eng",
+    "contact": "https://tkdl.res.in/tkdl/langdefault/common/Contact.asp?GL=Eng",
+    "key_info": {
+      "description": "Traditional Knowledge Digital Library (TKDL) is a collaborative project between CSIR and Ministry of AYUSH, Government of India",
+      "purpose": "Prevent misappropriation of Indian traditional knowledge at international patent offices",
+      "languages": "Texts available in English, German, French, Japanese, Spanish",
+      "systems_covered": ["Ayurveda", "Unani", "Siddha", "Yoga"],
+      "formats": "Ancient texts converted into patent-compatible format",
+      "access_model": "Available to patent offices internationally under access agreements; limited public access"
+    }
+  },
+  "publicly_accessible": {
+    "overview_pages": true,
+    "full_database": false,
+    "patent_revocations": "Listed on public page",
+    "achievements": "Listed on public page",
+    "faq": "Available"
+  },
+  "access_requirements": {
+    "patent_offices": "Formal access agreement required",
+    "researchers": "Case-by-case basis",
+    "general_public": "Only overview information"
+  }
+}

@@ -1,0 +1,90 @@
+{
+  "source": "ipindia.gov.in",
+  "url": "https://ipindia.gov.in",
+  "fetched_at": "2026-09-02",
+  "status": "accessible",
+  "content_type": "text/html",
+  "key_sections": {
+    "patents": {
+      "about": "https://ipindia.gov.in/about-us",
+      "vision_mission": "https://ipindia.gov.in/vision-mission",
+      "history": "https://ipindia.gov.in/history-of-indian-patent-system",
+      "organisation": "https://ipindia.gov.in/organisation-structure",
+      "jurisdiction": "https://ipindia.gov.in/jurisdiction",
+      "before_you_apply": {
+        "basics": "https://ipindia.gov.in/basics-of-patents",
+        "filing_process": "https://ipindia.gov.in/page-content/filing-process-1",
+        "public_search": "https://ipindia.gov.in/patents-before-you-apply-public-search",
+        "forms_fees": "https://ipindia.gov.in/patents-before-you-apply-forms-official-fees"
+      },
+      "e_services": {
+        "comprehensive_efiling": "https://ipindia.gov.in/patents-e-services-comprehensive-e-filing-services",
+        "track_status": "https://iprsearch.ipindia.gov.in/PublicSearch/PublicationSearch/ApplicationStatus",
+        "dynamic_utilities": "https://ipindia.gov.in/patents-e-services-dynamic-utilities",
+        "cause_list": "https://iprsearch.ipindia.gov.in/DynamicUtility/CauseListForHearingCase/Index",
+        "controller_decision": "https://iprsearch.ipindia.gov.in/DynamicUtility/ControllersDecision/Index"
+      },
+      "publications": {
+        "journals": "https://search.ipindia.gov.in/IPOJournal/Journal/Patent",
+        "scientific_advisers": "https://ipindia.gov.in/manual-blocks/roll-of-scientific-advisers-1",
+        "fee_refund": "https://ipindia.gov.in/patents-publications-patent-applications-fee-refund",
+        "archive": "https://ipindia.gov.in/page-content/other-publications-2"
+      },
+      "resources": {
+        "acts": "https://ipindia.gov.in/resource/patents-resources-act",
+        "rules": "https://ipindia.gov.in/resource/patents-resources-rules",
+        "guidelines": "https://ipindia.gov.in/resource/patents-resources-guidelines",
+        "manuals": "https://ipindia.gov.in/resource/patents-resources-manuals"
+      }
+    },
+    "designs": {
+      "search": "https://search.ipindia.gov.in/designsearch",
+      "status": "https://search.ipindia.gov.in/DesignApplicationStatus",
+      "eregister": "https://search.ipindia.gov.in/DesignApplicationStatus/DesignEregister/index",
+      "resources": {
+        "act": "https://ipindia.gov.in/designs-resources-act",
+        "rules": "https://ipindia.gov.in/designs-resources-rules",
+        "manuals": "https://ipindia.gov.in/designs-resources-manual"
+      }
+    },
+    "trademarks": {
+      "search": "https://ipindia.gov.in/trade-marks-before-you-apply-search-existing-trademarks",
+      "status": "https://tmrsearch.ipindia.gov.in/estatus",
+      "journals": "https://search.ipindia.gov.in/IPOJournal/Journal/Trademark",
+      "well_known_marks": "https://ipindia.gov.in/trade-marks-publications-list-of-well-known-trade-marks",
+      "resources": {
+        "acts": "https://ipindia.gov.in/trade-marks-resources-act",
+        "rules": "https://ipindia.gov.in/trade-marks-resources-rules",
+        "manuals": "https://ipindia.gov.in/trade-marks-resources-manual",
+        "guidelines": "https://ipindia.gov.in/trade-marks-resources-guidelines"
+      }
+    },
+    "gi": {
+      "search": "https://search.ipindia.gov.in/GIRPublicSearch/",
+      "registered_gi": "https://ipindia.gov.in/geographical-indications-track-application-list-of-registered-geographical-indications-and-authorised-users-part-a-register-list-of-registered-gi-of-india",
+      "registered_users": "https://ipindia.gov.in/part-b-register-list-of-registered-authorised-users",
+      "journal": "https://search.ipindia.gov.in/IPOJournal/Journal/GIR",
+      "resources": {
+        "act": "https://ipindia.gov.in/geographical-indications-resources-act",
+        "rules": "https://ipindia.gov.in/geographical-indications-resources-rules",
+        "manuals": "https://ipindia.gov.in/geographical-indications-resources-manual",
+        "guidelines": "https://ipindia.gov.in/geographical-indications-resources-guidelines"
+      }
+    },
+    "copyright": {
+      "status": "https://copyright.gov.in/frmStatusGenUser.aspx",
+      "search_work": "https://copyright.gov.in/SearchRoc.aspx",
+      "resources": {
+        "act": "https://ipindia.gov.in/copyright-acts",
+        "rules": "https://ipindia.gov.in/copyright-rules",
+        "manuals": "https://ipindia.gov.in/page-content/manuals"
+      }
+    },
+    "sicldr": {
+      "resources": {
+        "act_rules": "https://ipindia.gov.in/sicldr-resources-act-rules",
+        "forms": "https://ipindia.gov.in/sicldr-resources-forms"
+      }
+    }
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "source": "nbaindia.org",
+  "url": "https://nbaindia.org",
+  "fetched_at": "2026-09-02",
+  "status": "accessible",
+  "content_type": "text/html",
+  "key_sections": {
+    "about": "https://nbaindia.org/content/24/1/1/about.html",
+    "act_rules": "https://nbaindia.org/content/19/1/1/actrules.html",
+    "notifications": "https://nbaindia.org/content/21/1/1/notification.html",
+    "forms": "https://nbaindia.org/content/20/1/1/form.html",
+    "guidelines": "https://nbaindia.org/content/22/1/1/guidelines.html",
+    "abs_agreements": "https://nbaindia.org/content/23/1/1/absagreement.html",
+    "case_studies": "https://nbaindia.org/content/25/1/1/casestudies.html",
+    "faq": "https://nbaindia.org/content/26/1/1/faq.html",
+    "contact": "https://nbaindia.org/content/27/1/1/contact.html",
+    "key_documents": {
+      "biological_diversity_act_2002": "https://nbaindia.org/content/19/1/1/actrules.html",
+      "biological_diversity_rules_2004": "https://nbaindia.org/content/19/1/1/actrules.html",
+      "abs_regulations_2014": "https://nbaindia.org/content/19/1/1/actrules.html",
+      "guidelines_access_biological_resources": "https://nbaindia.org/content/22/1/1/guidelines.html",
+      "guidelines_access_associated_knowledge": "https://nbaindia.org/content/22/1/1/guidelines.html",
+      "guidelines_fair_equitable_sharing": "https://nbaindia.org/content/22/1/1/guidelines.html"
+    },
+    "forms": {
+      "form_i": "https://nbaindia.org/content/20/1/1/form.html",
+      "form_ii": "https://nbaindia.org/content/20/1/1/form.html",
+      "form_iii": "https://nbaindia.org/content/20/1/1/form.html",
+      "form_iv": "https://nbaindia.org/content/20/1/1/form.html"
+    }
+  }
+}
