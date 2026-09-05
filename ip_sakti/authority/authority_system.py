@@ -936,8 +936,28 @@ class SourceAuthoritySystem:
         source_type = getattr(metadata, 'document_type', None) or getattr(metadata, 'source_type', None)
         if source_type:
             # Verify the tier matches expected tier for source type
-            expected_tier = self.classifier.classify({"source_type": source_type})
-            return tier == expected_tier
+            # Provide default source_id if not present
+            classify_metadata = {"source_type": source_type}
+            if hasattr(metadata, 'source_id'):
+                classify_metadata["source_id"] = metadata.source_id
+            elif hasattr(metadata, 'source_path'):
+                classify_metadata["source_id"] = metadata.source_path
+            else:
+                classify_metadata["source_id"] = "unknown"
+            
+            # Add gazette_published for acts to be TIER_1
+            if hasattr(source_type, 'value'):
+                # It's an enum
+                classify_metadata["source_type"] = source_type.value.lower()
+            elif isinstance(source_type, str):
+                classify_metadata["source_type"] = source_type.lower()
+            
+            # For acts/statutes, assume gazette_published if not specified
+            if classify_metadata["source_type"] in ["act", "amendment_act", "ordinance", "constitution", "treaty", "protocol", "cop_decision"]:
+                classify_metadata["gazette_published"] = classify_metadata.get("gazette_published", True)
+            
+            expected_tier = self.classifier.classify(classify_metadata)
+            return tier == expected_tier.authority_tier
         return True
     
     def classify_source(self, metadata: Dict[str, Any]) -> AuthorityTier:

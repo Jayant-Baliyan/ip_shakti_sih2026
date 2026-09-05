@@ -969,6 +969,7 @@ class IngestionJob:
     status: IngestionStatus = IngestionStatus.PENDING
     error_message: Optional[str] = None
     document_id: Optional[str] = None
+    chunks: List[Any] = field(default_factory=list)
     started_at: Optional[datetime] = None
     completed_at: Optional[datetime] = None
     duration_seconds: float = 0.0

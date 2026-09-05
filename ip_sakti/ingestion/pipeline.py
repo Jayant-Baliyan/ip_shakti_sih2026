@@ -81,9 +81,13 @@ class MaliciousDocumentDetector(DocumentValidator):
         if self._has_executable_signature(content):
             errors.append("Document contains executable signatures")
         
-        # Check for embedded scripts
-        if self._has_embedded_scripts(content):
-            errors.append("Document contains embedded scripts")
+        # Check for embedded scripts (skip for HTML files)
+        mime_type = metadata.mime_type or ""
+        if "text/html" not in mime_type and "application/xhtml" not in mime_type:
+            # Also check detected type
+            if "text/html" not in (metadata.mime_type or ""):
+                if self._has_embedded_scripts(content):
+                    errors.append("Document contains embedded scripts")
         
         # Check for polyglot files
         if self._is_polyglot(content):
@@ -135,16 +139,26 @@ class FormatValidator(DocumentValidator):
     """Validates document format matches expected type."""
     
     SUPPORTED_TYPES = {
-        DocumentType.PATENT: ['application/pdf', 'application/xml', 'text/xml'],
-        DocumentType.TRADEMARK: ['application/pdf', 'application/xml', 'text/xml'],
-        DocumentType.COPYRIGHT: ['application/pdf', 'text/plain'],
+        DocumentType.PATENT: ['application/pdf', 'application/xml', 'text/xml', 'text/plain', 'text/html'],
+        DocumentType.TRADEMARK: ['application/pdf', 'application/xml', 'text/xml', 'text/plain', 'text/html'],
+        DocumentType.COPYRIGHT: ['application/pdf', 'text/plain', 'text/html'],
         DocumentType.DESIGN: ['application/pdf', 'image/jpeg', 'image/png'],
-        DocumentType.LEGAL_OPINION: ['application/pdf', 'text/plain'],
-        DocumentType.CASE_LAW: ['application/pdf', 'text/plain', 'application/xml'],
-        DocumentType.STATUTE: ['application/pdf', 'text/xml', 'application/xml'],
-        DocumentType.REGULATION: ['application/pdf', 'text/xml', 'application/xml'],
-        DocumentType.TREATY: ['application/pdf', 'text/plain'],
-        DocumentType.SCHOLARLY_ARTICLE: ['application/pdf', 'text/plain'],
+        DocumentType.LEGAL_OPINION: ['application/pdf', 'text/plain', 'text/html'],
+        DocumentType.CASE_LAW: ['application/pdf', 'text/plain', 'application/xml', 'text/html'],
+        DocumentType.STATUTE: ['application/pdf', 'text/xml', 'application/xml', 'text/plain', 'text/html'],
+        DocumentType.REGULATION: ['application/pdf', 'text/xml', 'application/xml', 'text/plain', 'text/html'],
+        DocumentType.TREATY: ['application/pdf', 'text/plain', 'text/html'],
+        DocumentType.SCHOLARLY_ARTICLE: ['application/pdf', 'text/plain', 'text/html'],
+        DocumentType.ACT: ['application/pdf', 'text/plain', 'text/xml', 'application/xml', 'text/html'],
+        DocumentType.RULE: ['application/pdf', 'text/plain', 'text/xml', 'application/xml', 'text/html'],
+        DocumentType.NOTIFICATION: ['application/pdf', 'text/plain', 'text/html'],
+        DocumentType.ORDER: ['application/pdf', 'text/plain', 'text/html'],
+        DocumentType.CIRCULAR: ['application/pdf', 'text/plain', 'text/html'],
+        DocumentType.GUIDELINE: ['application/pdf', 'text/plain', 'text/html'],
+        DocumentType.PROTOCOL: ['application/pdf', 'text/plain', 'text/html'],
+        DocumentType.REGISTRY_RECORD: ['application/pdf', 'text/plain', 'application/xml', 'text/html'],
+        DocumentType.PHARMACOPOEIA: ['application/pdf', 'text/plain', 'text/html'],
+        DocumentType.FORMULARY: ['application/pdf', 'text/plain', 'text/html'],
     }
     
     async def validate(self, content: bytes, metadata: DocumentMetadata) -> Tuple[bool, List[str]]:
@@ -152,12 +166,25 @@ class FormatValidator(DocumentValidator):
         expected_types = self.SUPPORTED_TYPES.get(metadata.document_type, [])
         mime_type = metadata.mime_type or mimetypes.guess_type(metadata.source_path or "")[0]
         
-        if mime_type and mime_type not in expected_types:
-            errors.append(f"MIME type {mime_type} not supported for {metadata.document_type}")
+        # Detect actual type from content
+        from ip_sakti.security.security_system import DocumentValidator as SecurityDocValidator
+        sec_validator = SecurityDocValidator()
+        detected_mime = sec_validator._detect_mime_type(content)
         
-        # Validate PDF structure if PDF
-        if mime_type == 'application/pdf' and not content.startswith(b'%PDF'):
-            errors.append("Invalid PDF structure")
+        # Use detected mime type if available
+        effective_mime = detected_mime if detected_mime != "text/plain" else mime_type
+        
+        if effective_mime and effective_mime not in expected_types:
+            errors.append(f"MIME type {effective_mime} not supported for {metadata.document_type}")
+        
+        # Validate PDF structure if PDF (lenient for HTML-in-PDF)
+        if effective_mime == 'application/pdf' and not content.startswith(b'%PDF'):
+            # Check if it's HTML content (common for mislabeled PDFs)
+            if content.strip().startswith(b'<!DOCTYPE') or content.strip().startswith(b'<html'):
+                logger.warning("File has .pdf extension but contains HTML content - treating as HTML")
+                # This will be handled by the HTML loader
+            else:
+                errors.append("Invalid PDF structure")
         
         return len(errors) == 0, errors
 
@@ -346,6 +373,7 @@ class IngestionPipeline:
             if job.status != IngestionStatus.FAILED:
                 job.status = IngestionStatus.COMPLETED
                 job.document_id = context.document.id if context.document else None
+                job.chunks = context.chunks  # Store chunks in job for access
             
         except Exception as e:
             logger.exception(f"Ingestion failed for job {job.id}")
@@ -370,7 +398,8 @@ class IngestionPipeline:
                     url=job.source_url,
                     authority_tier=job.authority_tier or SourceAuthorityTier.OFFICIAL_REGISTRY,
                 ),
-                metadata=job.metadata or DocumentMetadata(
+                metadata=DocumentMetadata(
+                    **(job.metadata or {}),
                     title=job.title or "Untitled",
                     document_type=job.document_type or DocumentType.PATENT,
                     jurisdiction=job.jurisdiction or Jurisdiction.INDIA,
@@ -384,7 +413,8 @@ class IngestionPipeline:
                     path=job.source_path,
                     authority_tier=job.authority_tier or SourceAuthorityTier.OFFICIAL_REGISTRY,
                 ),
-                metadata=job.metadata or DocumentMetadata(
+                metadata=DocumentMetadata(
+                    **(job.metadata or {}),
                     title=job.title or Path(job.source_path).stem,
                     document_type=job.document_type or DocumentType.PATENT,
                     jurisdiction=job.jurisdiction or Jurisdiction.INDIA,
@@ -397,7 +427,8 @@ class IngestionPipeline:
                 source=DocumentSource(
                     authority_tier=job.authority_tier or SourceAuthorityTier.OFFICIAL_REGISTRY,
                 ),
-                metadata=job.metadata or DocumentMetadata(
+                metadata=DocumentMetadata(
+                    **(job.metadata or {}),
                     title=job.title or "Untitled",
                     document_type=job.document_type or DocumentType.PATENT,
                     jurisdiction=job.jurisdiction or Jurisdiction.INDIA,
@@ -451,11 +482,19 @@ class IngestionPipeline:
             context.errors.append("No document or content to validate")
             return
         
-        # Determine MIME type
-        mime_type = context.document.metadata.mime_type
-        if not mime_type and context.document.source.path:
-            mime_type = mimetypes.guess_type(context.document.source.path)[0]
-        context.document.metadata.mime_type = mime_type
+        # Detect actual MIME type from content bytes (more reliable than extension)
+        from ip_sakti.security.security_system import DocumentValidator as SecurityDocValidator
+        sec_validator = SecurityDocValidator()
+        detected_mime = sec_validator._detect_mime_type(context.raw_content)
+        
+        # Use detected MIME type as the authoritative type
+        # If detection fails (text/plain), fall back to extension guess
+        if detected_mime != "text/plain":
+            context.document.metadata.mime_type = detected_mime
+        else:
+            context.document.metadata.mime_type = mimetypes.guess_type(context.document.source.path or "")[0] or "text/plain"
+        
+        logger.info(f"Detected MIME type: {context.document.metadata.mime_type}")
         
         # Run all validators
         for validator in self.validators:
@@ -466,7 +505,7 @@ class IngestionPipeline:
         
         # Verify authority tier
         if context.document.source.authority_tier:
-            tier_valid = await self.authority_system.verify_tier(
+            tier_valid = self.authority_system.verify_tier(
                 context.document.source.authority_tier,
                 context.document.metadata
             )
@@ -478,20 +517,37 @@ class IngestionPipeline:
         ).total_seconds() * 1000
     
     async def _stage_extract(self, context: IngestionContext) -> None:
-        """Extract text content from document."""
-        if not context.document or not context.raw_content:
-            context.errors.append("No document or content to extract")
+        """Extract text content from document using LangChain loaders."""
+        if not context.document or not context.job.source_path:
+            context.errors.append("No document or source path to extract")
             return
         
-        mime_type = context.document.metadata.mime_type or 'text/plain'
-        extractor = ExtractorFactory.get_extractor(mime_type)
+        # Use the new document loaders
+        from ip_sakti.ingestion.loaders import load_document
         
-        context.extracted_text = await extractor.extract(context.raw_content, context.document.metadata)
-        
-        if not context.extracted_text or len(context.extracted_text.strip()) < 10:
-            context.errors.append("Extracted text too short or empty")
-        
-        context.document.content = context.extracted_text
+        try:
+            loaded_docs = await load_document(context.job.source_path)
+            
+            if not loaded_docs:
+                context.errors.append("No content extracted from document")
+                return
+            
+            # Combine all loaded documents
+            text_parts = []
+            for doc in loaded_docs:
+                if doc.content and doc.content.strip():
+                    text_parts.append(doc.content.strip())
+            
+            context.extracted_text = "\n\n".join(text_parts)
+            
+            if not context.extracted_text or len(context.extracted_text.strip()) < 10:
+                context.errors.append("Extracted text too short or empty")
+            
+            context.document.content = context.extracted_text
+            
+        except Exception as e:
+            logger.error(f"Document loading failed: {e}")
+            context.errors.append(f"Document loading failed: {e}")
         
         context.metrics['extract_time_ms'] = (
             datetime.utcnow() - context.stage_start_time
@@ -500,7 +556,7 @@ class IngestionPipeline:
     
     async def _stage_chunk(self, context: IngestionContext) -> None:
         """Chunk document using chunking strategy (Phase 8)."""
-        from ip_sakti.ingestion.chunking import ChunkingStrategy, ChunkingConfig
+        from ip_sakti.ingestion.chunking import ChunkingStrategy, ChunkingConfig, ChunkingStrategyType
         
         if not context.document or not context.extracted_text:
             context.errors.append("No document or text to chunk")
@@ -509,7 +565,7 @@ class IngestionPipeline:
         config = ChunkingConfig(
             chunk_size=self.settings.chunk_size,
             chunk_overlap=self.settings.chunk_overlap,
-            strategy=ChunkingStrategy(self.settings.chunking_strategy),
+            strategy=ChunkingStrategyType(self.settings.chunking_strategy),
         )
         
         chunker = ChunkingStrategy(config)

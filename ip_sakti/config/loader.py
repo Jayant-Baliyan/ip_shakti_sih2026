@@ -5,7 +5,7 @@ Loads settings from YAML with environment variable overrides.
 
 import os
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
 from dataclasses import dataclass, field
 import yaml
 
@@ -90,6 +90,9 @@ class Settings:
     
     mtls_enabled: bool = True
     tls_min_version: str = "TLSv1.3"
+    
+    # Ingestion allowed paths
+    allowed_ingestion_paths: List[str] = field(default_factory=lambda: ["/mnt/c/Users/vvars/OneDrive/Desktop/sih rag/data", "/tmp/ingestion"])
     
     # Ingestion
     ingestion_sources: Dict[str, Dict[str, Any]] = field(default_factory=dict)
@@ -299,6 +302,9 @@ def load_settings(config_path: Optional[str] = None) -> Settings:
     net = sec.get("network", {})
     settings.mtls_enabled = net.get("mtls_enabled", settings.mtls_enabled)
     settings.tls_min_version = net.get("tls_min_version", settings.tls_min_version)
+    
+    # Allowed ingestion paths
+    settings.allowed_ingestion_paths = sec.get("allowed_ingestion_paths", settings.allowed_ingestion_paths)
     
     # Ingestion
     ing = config.get("ingestion", {})

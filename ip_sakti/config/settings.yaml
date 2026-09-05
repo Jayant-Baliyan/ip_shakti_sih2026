@@ -178,6 +178,10 @@ security:
     cipher_suites:
       - "TLS_AES_256_GCM_SHA384"
       - "TLS_CHACHA20_POLY1305_SHA256"
+  
+  allowed_ingestion_paths:
+    - "/mnt/c/Users/vvars/OneDrive/Desktop/sih rag/data"
+    - "/tmp/ingestion"
 
 # ==========================================
 # INGESTION CONFIGURATION (Phase 7)
