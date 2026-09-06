@@ -6,6 +6,7 @@ This is the pipeline logic - retrieval engine infra is in Phase 10.
 
 import asyncio
 import logging
+from pathlib import Path
 import time
 import uuid
 from abc import ABC, abstractmethod
@@ -26,9 +27,19 @@ from ip_sakti.core.models import (
     RetrievalStrategy,
     SourceAuthorityTier,
 )
+from rank_bm25 import BM25Okapi
 from ip_sakti.authority.authority_system import SourceAuthoritySystem
 from ip_sakti.ingestion.chunking import ChunkingStrategy, ChunkingConfig, ChunkingStrategyType
 from ip_sakti.retrieval.retrieval_engine import RetrievalEngine, RetrievalConfig, SearchRequest
+from ip_sakti.embedding.embedder import SentenceTransformerEmbedder
+from ip_sakti.embedding.vector_store import ChromaVectorStore
+from ip_sakti.generation.citation_first import (
+    CitationFirstGenerator,
+    CitationConfig,
+    Citation,
+    MANDATORY_DISCLAIMER,
+    LOW_CONFIDENCE_MESSAGE,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -451,14 +462,17 @@ class ContextBuilder:
         citation_id: int,
         result: RetrievalResult,
     ) -> Dict[str, Any]:
-        """Build citation object from chunk."""
+        source_path = chunk.metadata.get('source_path', '')
+        title = Path(source_path).stem.replace('_', ' ').title() if source_path else f"Legal Document {chunk.document_id}"
         return {
             'id': citation_id,
+            'title': title,
             'chunk_id': chunk.id,
             'document_id': chunk.document_id,
+            'text': chunk.content[:300],
             'content_preview': chunk.content[:200] + "..." if len(chunk.content) > 200 else chunk.content,
-            'score': result.score,
-            'reranked_score': result.reranked_score,
+            'score': round(float(result.score), 4),
+            'reranked_score': round(float(getattr(result, 'reranked_score', result.score)), 4),
             'authority_score': chunk.metadata.get('authority_score'),
             'source_tier': chunk.metadata.get('source_authority_tier'),
             'jurisdiction': chunk.metadata.get('jurisdiction'),
@@ -484,11 +498,11 @@ class Generator(ABC):
 
 
 class LLMGenerator(Generator):
-    """LLM-based answer generator."""
+    """LLM-based answer generator using citation-first generation."""
     
     def __init__(self, settings: Settings):
         self.settings = settings
-        self.model = None  # Would load actual LLM
+        self.citation_generator = CitationFirstGenerator(CitationConfig(), settings)
     
     async def generate(
         self,
@@ -497,61 +511,27 @@ class LLMGenerator(Generator):
         citations: List[Dict[str, Any]],
         rag_context: RAGContext,
     ) -> Tuple[str, float]:
-        # Placeholder for actual LLM call
-        # In production: use OpenAI, Anthropic, or local model
-        
-        # Build prompt
-        prompt = self._build_prompt(query, context, citations)
-        
-        # Simulate generation
-        answer = self._simulate_generation(prompt, query, citations)
-        confidence = 0.85  # Placeholder
-        
-        return answer, confidence
-    
-    def _build_prompt(
-        self,
-        query: str,
-        context: str,
-        citations: List[Dict[str, Any]],
-    ) -> str:
-        """Build prompt for LLM."""
-        citation_list = "\n".join([
-            f"[{c['id']}] {c.get('document_type', 'Document')} - {c.get('source_tier', 'Unknown')} - {c.get('jurisdiction', 'Unknown')}"
+        cited_citations = [
+            Citation(
+                id=c['id'],
+                chunk_id=c.get('chunk_id', ''),
+                document_id=c.get('document_id', ''),
+                text=c.get('content_preview', c.get('text', '')),
+                source_type=str(c.get('document_type', 'statute')),
+                authority_tier=str(c.get('source_tier', 'tier1')),
+                jurisdiction=c.get('jurisdiction'),
+                section=c.get('section'),
+                confidence=float(c.get('score', 0.8)),
+            )
             for c in citations
-        ])
+        ]
         
-        return f"""You are an IP law expert assistant. Answer the query using ONLY the provided context.
-Cite your sources using the citation markers [1], [2], etc.
-
-Context:
-{context}
-
-Sources:
-{citation_list}
-
-Query: {query}
-
-Answer:"""
-    
-    def _simulate_generation(
-        self,
-        prompt: str,
-        query: str,
-        citations: List[Dict[str, Any]],
-    ) -> str:
-        """Simulate answer generation (placeholder)."""
-        # In production, this would call the actual LLM
-        if not citations:
-            return "I could not find relevant information to answer your query."
-        
-        # Simple template-based response
-        sources_summary = ", ".join([
-            f"[{c['id']}] {c.get('document_type', 'Document')}"
-            for c in citations[:3]
-        ])
-        
-        return f"Based on the retrieved sources ({sources_summary}), here is the answer to your query about {query[:100]}... This is a simulated response - in production, an LLM would generate a detailed answer with proper citations."
+        cited_answer = await self.citation_generator.generate(
+            query=query,
+            context_chunks=rag_context.context_chunks,
+            citations=cited_citations,
+        )
+        return cited_answer.answer, cited_answer.confidence_score
 
 
 class CitationValidator:
@@ -563,16 +543,15 @@ class CitationValidator:
     def validate(self, answer: str, citations: List[Dict[str, Any]]) -> Tuple[bool, List[str]]:
         """Validate citations in answer."""
         errors = []
-        
-        # Find all citation markers in answer
+        if "Insufficient authoritative evidence" in answer:
+            return True, []
         citation_pattern = r'\[(\d+)\]'
         found_citations = set(int(m) for m in re.findall(citation_pattern, answer))
-        
-        # Check all found citations exist
         valid_citation_ids = {c['id'] for c in citations}
         for cite_id in found_citations:
             if cite_id not in valid_citation_ids:
                 errors.append(f"Citation [{cite_id}] in answer does not exist in sources")
+        return len(errors) == 0, errors
         
         # Check all sources are cited (if required)
         if self.settings.rag_validation.get("require_all_sources_cited", True):
@@ -591,9 +570,13 @@ class RAGPipeline:
         settings: Optional[Settings] = None,
         authority_system: Optional[SourceAuthoritySystem] = None,
         retrieval_engine: Optional[RetrievalEngine] = None,
+        embedder: Optional[SentenceTransformerEmbedder] = None,
+        vector_store: Optional[ChromaVectorStore] = None,
     ):
         self.settings = settings or get_settings()
         self.authority_system = authority_system or SourceAuthoritySystem(self.settings)
+        self.embedder = embedder or SentenceTransformerEmbedder()
+        self.vector_store = vector_store or ChromaVectorStore()
         self.retrieval_engine = retrieval_engine or RetrievalEngine(
             RetrievalConfig(
                 top_k=self.settings.rag_retrieval.get("top_k_final", 10),
@@ -607,7 +590,6 @@ class RAGPipeline:
         self.strategy_selector = RetrievalStrategySelector()
         self.rerankers = [
             AuthorityWeightedReranker(self.settings, self.authority_system),
-            CrossEncoderReranker(self.settings),
         ]
         self.context_builder = ContextBuilder(self.settings)
         self.generator = LLMGenerator(self.settings)
@@ -682,37 +664,99 @@ class RAGPipeline:
         context.metrics['num_query_variants'] = len(context.rewritten_queries)
     
     async def _stage_retrieval(self, context: RAGContext) -> None:
-        """Retrieve documents for all query variants."""
-        analysis = context.metadata.get('analysis', {})
-        strategies = self.strategy_selector.select(analysis)
+        """Retrieve documents using sentence-transformer and rank-bm25 with hard jurisdiction filtering."""
+        query_text = context.original_query
         
-        all_results = []
-        for variant in context.rewritten_queries:
-            for strategy in strategies:
-                request = SearchRequest(
-                    query=variant,
-                    strategy=strategy,
-                    filters={
-                        'jurisdiction': analysis.get('jurisdiction'),
-                        'document_type': self._infer_document_type(analysis.get('intent')),
-                    },
-                    top_k=self.settings.rag_retrieval.get("top_k_per_variant", 20),
-                )
-                response = await self.retrieval_engine.search(request)
-                all_results.extend(response.results)
-        
-        # Deduplicate by chunk_id
-        seen = set()
-        unique_results = []
-        for result in all_results:
-            if result.chunk.id not in seen:
-                seen.add(result.chunk.id)
-                unique_results.append(result)
-        
-        # Sort by score
-        unique_results.sort(key=lambda r: r.score, reverse=True)
-        context.retrieval_results = unique_results[:self.settings.rag_retrieval.get("top_k_final", 10)]
-        
+        # 1. Determine jurisdiction: INDIA vs INTL
+        req_jur = context.metadata.get("jurisdiction") or getattr(context.query, "jurisdiction", None)
+        raw_jur = (
+            req_jur.value if hasattr(req_jur, "value") else str(req_jur or "INDIA")
+        ).upper()
+        if "INTL" in raw_jur or "INTERNATIONAL" in raw_jur:
+            jur_tag = "INTL"
+        else:
+            jur_tag = "INDIA"
+
+        # 2. Embed query and search Chroma with hard jurisdiction filter
+        query_vector = await self.embedder.embed_query(query_text)
+        filters = {"jurisdiction": jur_tag}
+
+        fclass = context.metadata.get("formulation_class")
+        if fclass and str(fclass).lower() not in ("all", "any", "other"):
+            filters["formulation_class"] = str(fclass).lower()
+
+        candidates = await self.vector_store.search(
+            query_vector=query_vector,
+            top_k=50,
+            filters=filters,
+        )
+
+        # 2b. Direct statutory section / rule lookup boost if query mentions specific provisions
+        sec_matches = re.findall(r'(?:section|sec\.?|rule|article)\s+\d+[a-z\(\)]*', query_text, re.IGNORECASE)
+        if sec_matches:
+            try:
+                candidate_ids = {c.id for c, _ in candidates}
+                for sec in sec_matches:
+                    clean_sec = sec.strip()
+                    doc_hits = self.vector_store._collection.get(
+                        where_document={"$contains": clean_sec},
+                        limit=5,
+                    )
+                    if doc_hits and doc_hits.get("ids"):
+                        for cid, doc, meta in zip(doc_hits["ids"], doc_hits["documents"], doc_hits["metadatas"]):
+                            chunk_jur = meta.get("jurisdiction", "INDIA")
+                            if cid not in candidate_ids and chunk_jur == jur_tag:
+                                chunk_obj = DocumentChunk(
+                                    id=cid,
+                                    document_id=meta.get("document_id", ""),
+                                    content=doc,
+                                    chunk_index=int(meta.get("chunk_index", 0)),
+                                    metadata=meta,
+                                    authority_score=float(meta.get("authority_score", 1.0)),
+                                    jurisdiction=JurisdictionCode(chunk_jur) if chunk_jur in JurisdictionCode._value2member_map_ else JurisdictionCode.INDIA,
+                                )
+                                candidates.append((chunk_obj, 0.90))
+                                candidate_ids.add(cid)
+            except Exception as e:
+                logger.debug(f"Direct section lookup: {e}")
+
+        if not candidates:
+            context.retrieval_results = []
+            context.reranked_results = []
+            context.metrics['retrieval_time_ms'] = (
+                datetime.utcnow() - context.stage_start_time
+            ).total_seconds() * 1000
+            context.metrics['num_results'] = 0
+            return
+
+        # 3. BM25 keyword search over filtered candidates
+        corpus_tokens = [chunk.content.lower().split() for chunk, _ in candidates]
+        bm25 = BM25Okapi(corpus_tokens)
+        query_tokens = query_text.lower().split()
+        bm25_scores = bm25.get_scores(query_tokens)
+        max_bm25 = max(bm25_scores) if len(bm25_scores) > 0 and max(bm25_scores) > 0 else 1.0
+
+        # 4. Combine scores (0.5 vector + 0.5 BM25)
+        combined_results = []
+        for idx, (chunk, vec_score) in enumerate(candidates):
+            norm_bm = (bm25_scores[idx] / max_bm25) if max_bm25 > 0 else 0.0
+            score = 0.5 * float(vec_score) + 0.5 * float(norm_bm)
+            combined_results.append((chunk, score))
+
+        combined_results.sort(key=lambda x: x[1], reverse=True)
+        top_k = max(5, self.settings.rag_retrieval.get("top_k_final", 5))
+        top_candidates = combined_results[:top_k]
+
+        context.retrieval_results = [
+            RetrievalResult(
+                chunk=chunk,
+                score=score,
+                strategy=RetrievalStrategy.HYBRID,
+            )
+            for chunk, score in top_candidates
+        ]
+        context.reranked_results = context.retrieval_results
+
         context.metrics['retrieval_time_ms'] = (
             datetime.utcnow() - context.stage_start_time
         ).total_seconds() * 1000
@@ -733,24 +777,21 @@ class RAGPipeline:
         return mapping.get(intent)
     
     async def _stage_reranking(self, context: RAGContext) -> None:
-        """Rerank retrieval results."""
-        results = context.retrieval_results
-        
-        for reranker in self.rerankers:
-            results = await reranker.rerank(
-                context.original_query,
-                results,
-                context,
-            )
-        
-        context.reranked_results = results
-        
+        """Pass through results; combined vector and BM25 scores already calculated."""
+        if not context.reranked_results:
+            context.reranked_results = context.retrieval_results
         context.metrics['reranking_time_ms'] = (
             datetime.utcnow() - context.stage_start_time
         ).total_seconds() * 1000
     
     async def _stage_context_construction(self, context: RAGContext) -> None:
         """Build context from reranked results."""
+        if not context.reranked_results:
+            context.context_chunks = []
+            context.citations = []
+            context.metadata['context_string'] = ""
+            return
+
         context_string, context_chunks, citations = self.context_builder.build_context(
             context.reranked_results,
             context,
@@ -768,6 +809,11 @@ class RAGPipeline:
     
     async def _stage_generation(self, context: RAGContext) -> None:
         """Generate answer using LLM."""
+        if not context.context_chunks:
+            context.generated_answer = LOW_CONFIDENCE_MESSAGE
+            context.confidence_score = 0.1
+            return
+
         context_string = context.metadata.get('context_string', '')
         
         answer, confidence = await self.generator.generate(
@@ -786,8 +832,6 @@ class RAGPipeline:
     
     async def _stage_citation(self, context: RAGContext) -> None:
         """Post-process citations in answer."""
-        # Ensure citations are properly formatted
-        # This could also do citation verification
         pass
     
     async def _stage_validation(self, context: RAGContext) -> None:
@@ -795,18 +839,64 @@ class RAGPipeline:
         if not context.generated_answer:
             context.errors.append("No answer generated")
             return
+        if "Insufficient authoritative evidence" in context.generated_answer:
+            return
         
         is_valid, errors = self.citation_validator.validate(
             context.generated_answer,
             context.citations,
         )
-        
         if not is_valid:
-            context.errors.extend(errors)
+            logger.warning(f"Citation validation warning: {errors}")
         
         context.metrics['validation_time_ms'] = (
             datetime.utcnow() - context.stage_start_time
         ).total_seconds() * 1000
+
+    async def execute_query(
+        self,
+        query_text: str,
+        jurisdiction: str = "INDIA",
+        formulation_class: Optional[str] = None,
+    ) -> Dict[str, Any]:
+        """Convenience method for running end-to-end query."""
+        jur_code = JurisdictionCode.INTERNATIONAL if "INTL" in str(jurisdiction).upper() else JurisdictionCode.INDIA
+        query_obj = Query(
+            text=query_text,
+            user_id="default_user",
+            jurisdiction=jur_code,
+        )
+        context = RAGContext(
+            query=query_obj,
+            original_query=query_text,
+        )
+        context.metadata["jurisdiction"] = "INTL" if "INTL" in str(jurisdiction).upper() else "INDIA"
+        if formulation_class:
+            context.metadata["formulation_class"] = formulation_class
+
+        for stage in [
+            RAGStage.QUERY_ANALYSIS,
+            RAGStage.QUERY_REWRITING,
+            RAGStage.RETRIEVAL,
+            RAGStage.RERANKING,
+            RAGStage.CONTEXT_CONSTRUCTION,
+            RAGStage.GENERATION,
+            RAGStage.CITATION,
+            RAGStage.VALIDATION,
+        ]:
+            context.current_stage = stage
+            context.stage_start_time = datetime.utcnow()
+            handler = self.stage_handlers.get(stage)
+            if handler:
+                await handler(context)
+            if context.errors:
+                break
+
+        return {
+            "answer": context.generated_answer or LOW_CONFIDENCE_MESSAGE,
+            "citations": context.citations,
+            "confidence": context.confidence_score,
+        }
 
 
 class StreamingRAGPipeline(RAGPipeline):

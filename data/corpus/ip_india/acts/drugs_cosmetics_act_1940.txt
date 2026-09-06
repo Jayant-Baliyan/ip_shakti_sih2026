@@ -8,7 +8,44 @@
 
 
 
-The Trade Marks Rules, 2017, India, WIPO Lex
+THE DRUGS AND COSMETICS ACT, 1940
+(Act No. 23 of 1940, as amended)
+
+CHAPTER I - INTRODUCTORY
+
+Section 3(a) of the Drugs and Cosmetics Act, 1940: "Ayurvedic, Siddha or Unani drug" includes all medicines intended for internal or external use for or in the diagnosis, treatment, mitigation or prevention of disease or disorder in human beings or animals, and manufactured exclusively in accordance with the formulae described in the authoritative books of Ayurvedic, Siddha and Unani (Tibb) systems of medicine, specified in the First Schedule.
+
+Section 3(aaa) of the Drugs and Cosmetics Act, 1940: "Cosmetic" means any article intended to be rubbed, poured, sprinkled or sprayed on, or introduced into, or otherwise applied to, the human body or any part thereof for cleansing, beautifying, promoting attractiveness, or altering the appearance, and includes any article intended for use as a component of cosmetic.
+
+Section 3(b) of the Drugs and Cosmetics Act, 1940: "Drug" includes all medicines for internal or external use of human beings or animals and all substances intended to be used for or in the diagnosis, treatment, mitigation or prevention of any disease or disorder in human beings or animals.
+
+Section 3(h) of the Drugs and Cosmetics Act, 1940: "Patent or proprietary medicine" in relation to Ayurvedic, Siddha or Unani systems of medicine means all formulations containing only such ingredients mentioned in the formulae described in the authoritative books of Ayurveda, Siddha or Unani systems of medicine specified in the First Schedule, but does not include a medicine administered by parenteral route or sold under a classical treatise name.
+
+CHAPTER IV-A - PROVISIONS RELATING TO AYURVEDIC, SIDDHA AND UNANI DRUGS
+
+Section 33A of the Drugs and Cosmetics Act, 1940: Application of Chapter IV-A.
+This Chapter shall apply exclusively to Ayurvedic, Siddha and Unani drugs.
+
+Section 33C of the Drugs and Cosmetics Act, 1940: Ayurvedic, Siddha and Unani Drugs Technical Advisory Board (ASUDTAB).
+The Central Government shall constitute a Board to advise the Central Government and State Governments on technical matters arising out of the administration of this Act for Ayurvedic, Siddha and Unani drugs.
+
+Section 33EEA of the Drugs and Cosmetics Act, 1940: Misbranded Ayurvedic drugs.
+An Ayurvedic, Siddha or Unani drug shall be deemed misbranded if it is colored, coated, powdered or polished to conceal damage, or made to appear of greater therapeutic value than it really is.
+
+Section 33EEB of the Drugs and Cosmetics Act, 1940: Adulterated Ayurvedic drugs.
+An Ayurvedic, Siddha or Unani drug shall be deemed adulterated if it consists of filthy, putrid or decomposed substance, or prepared under insanitary conditions.
+
+Section 33EEC of the Drugs and Cosmetics Act, 1940: Spurious Ayurvedic drugs.
+An Ayurvedic, Siddha or Unani drug shall be deemed spurious if manufactured or sold under a name belonging to another drug, or if an imitation or substitute.
+
+Section 33ED of the Drugs and Cosmetics Act, 1940: Prohibition of manufacture and sale.
+No person shall manufacture for sale or distribution any Ayurvedic, Siddha or Unani drug except under a valid license issued under Rule 158B.
+
+Rule 158B of the Drugs and Cosmetics Rules, 1945: Guidelines for grant of license of Ayurvedic, Siddha and Unani drugs:
+(1) Classical formulations: Manufactured strictly as per First Schedule authoritative treatises; requires textual evidence of traditional usage.
+(2) Proprietary Ayurvedic medicines: Formulations containing ingredients from First Schedule texts; requires proof of safety and textual rationale.
+(3) Novel Extracts / Phytopharmaceuticals: Isolated active fractions or novel indications require clinical safety, acute toxicity studies, and clinical validation.
+
 
 
 
@@ -850,7 +887,7 @@ of a trademark may apply to the Registrar in Form TM-P for the conversion of the
 (3) The amendment in the specification of goods or services or in the classification if approved shall be advertised in the Journal; thereafter the entry in the register in respect of that registration shall be modified accordingly.
 CHAPTER VIII MISCLLANEOUS
 106. Refusal or invalidation of registration of a trademark conflicting with a geographical indication.- A request in Form TM-0, may be made to the Registrar for the refusal or invalidation of a registered trademark by an interested party along with a statement of case together with an affidavit and which-
-(a) eontains or c.onsists of a geographic.al indication with respect to goods or class or classes of goods not originating in the territory of a country, or a region or locality in that territory which such geographical indication indicates, if the use of such geographical indication in the trademark for such goods, is of such nature as to confuse or mislead the persons as to the true place of origin of such goods or class or classes of goods;
+(a) contains or consists of a geographical indication with respect to goods or class or classes of goods not originating in the territory of a country, or a region or locality in that territory which such geographical indication indicates, if the use of such geographical indication in the trademark for such goods, is of such nature as to confuse or mislead the persons as to the true place of origin of such goods or class or classes of goods;
 (b) contains or consists of geographical indication identifying goods or class or classes of goods notified under sub-section (2) of section 22 of the Geographical Indications of Goods (Registration and Protection) Act, 1999 (48 of 1999). 107. Single application under sub-section (2) of section 18.- (I) Where an application for the registration of a trademark for different classes of goods or services is made under sub-section (2) of section 18, the specification of goods or services contained in it shall set out the classes in consecutive numerical order beginning with the lowest number and indicate in each class the goods or services appropriate to that class.
 (2) Applications filed under sub-section (2) of section 18 when ordered to be advertised shall be published in a separate section of the Journal.
 (3) The Registrar shall issue a single certificate of registration in respect of an application made under sub-section (2) of section 18, which has proceeded to registration. 108. Divisional Application. - (1) Where an application is made in Form TM-M under proviso to section 22 for the division of a single pending application, the registrar may, on payment of a divisional fee, divide such application into two or more separate applications.

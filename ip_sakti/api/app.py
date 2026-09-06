@@ -14,7 +14,8 @@ from fastapi import Depends, FastAPI, HTTPException, Request, Response, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.openapi.utils import get_openapi
-from fastapi.responses import JSONResponse, StreamingResponse
+import os
+from fastapi.responses import JSONResponse, StreamingResponse, FileResponse
 from pydantic import BaseModel
 
 from ip_sakti.config.loader import Settings, get_settings
@@ -228,8 +229,9 @@ app.openapi = custom_openapi
 # ============================================================
 
 def get_rag_pipeline() -> RAGPipeline:
+    global _rag_pipeline
     if _rag_pipeline is None:
-        raise HTTPException(status_code=503, detail="RAG pipeline not initialized")
+        _rag_pipeline = create_rag_pipeline(streaming=False)
     return _rag_pipeline
 
 
@@ -366,90 +368,63 @@ async def revoke_api_key(
 # QUERY ENDPOINTS
 # ============================================================
 
-@app.post("/query", response_model=QueryResponse, tags=["Query"])
+class SimpleQueryRequest(BaseModel):
+    """Simple query request for direct RAG execution without auth barriers."""
+    query: str
+    jurisdiction: Optional[str] = "INDIA"
+    formulation_class: Optional[str] = None
+    language: Optional[str] = "en"
+    max_results: Optional[int] = 10
+    user_id: Optional[str] = "default_user"
+    session_id: Optional[str] = None
+
+
+@app.post("/query", tags=["Query"])
 async def query(
-    request: QueryRequest,
-    user: CurrentUser = Depends(get_current_user),
+    request: SimpleQueryRequest,
     rag_pipeline: RAGPipeline = Depends(get_rag_pipeline),
-    _rate_limit: None = Depends(rate_limit_dependency),
 ):
     """
     Execute a legal query and get a grounded answer with citations.
-    
-    - **query**: Natural language legal question
-    - **jurisdiction**: Optional jurisdiction override
-    - **language**: Response language (default: English)
-    - **max_results**: Maximum evidence chunks to retrieve
-    - **require_citations**: Whether citations are mandatory
+    No auth barriers required. Returns {answer, citations, confidence}.
     """
-    from ip_sakti.core.models import Query, QueryIntent, JurisdictionCode, LanguageCode
-
-    # Convert to internal Query model
-    query = Query(
-        text=request.query,
-        user_id=request.user_id,
-        session_id=request.session_id,
-        intent=request.intent,
-        jurisdiction=request.jurisdiction or JurisdictionCode.INDIA,
-        language=request.language,
-        max_results=request.max_results,
-        filters=request.filters,
-        require_citations=request.require_citations,
+    res = await rag_pipeline.execute_query(
+        query_text=request.query,
+        jurisdiction=request.jurisdiction or "INDIA",
+        formulation_class=request.formulation_class,
     )
+    return {
+        "answer": res["answer"],
+        "citations": res["citations"],
+        "confidence": res["confidence"],
+    }
 
-    # Run RAG pipeline
-    context = await rag_pipeline.run(query)
 
-    if context.errors:
-        return QueryResponse(
-            success=False,
-            data=QueryResponseModel(
-                query_id=context.query.query_id,
-                answer=GeneratedAnswer(
-                    answer_id="error",
-                    query=request.query,
-                    segments=[],
-                    citations=[],
-                    overall_confidence=0.0,
-                    jurisdiction=request.jurisdiction or JurisdictionCode.INDIA,
-                    language=request.language,
-                    processing_time_ms=int(context.metrics.get("total_time_ms", 0)),
-                ),
-                retrieved_chunks=[],
-                intent=context.query.intent or QueryIntent.GENERAL_LEGAL,
-                jurisdiction=request.jurisdiction or JurisdictionCode.INDIA,
-                warnings=context.errors,
-            ),
-        )
+# ============================================================
+# FORMULATION CLASSIFICATION ENDPOINTS
+# ============================================================
 
-    # Build response (simplified - would map from context)
-    return QueryResponse(
-        success=True,
-        data=QueryResponseModel(
-            query_id=context.query.query_id,
-            answer=GeneratedAnswer(
-                answer_id=str(context.query.query_id),
-                query=request.query,
-                segments=[
-                    GeneratedSegment(
-                        text=context.generated_answer or "No answer generated",
-                        claims=[],
-                        citations=[],
-                    )
-                ],
-                citations=[],  # Would map from context.citations
-                overall_confidence=context.confidence_score,
-                jurisdiction=request.jurisdiction or JurisdictionCode.INDIA,
-                language=request.language,
-                processing_time_ms=int(context.metrics.get("total_time_ms", 0)),
-                retrieval_stats=context.metrics,
-            ),
-            retrieved_chunks=[],  # Would map from context.retrieval_results
-            intent=context.query.intent or QueryIntent.GENERAL_LEGAL,
-            jurisdiction=request.jurisdiction or JurisdictionCode.INDIA,
-            warnings=context.errors,
-        ),
-    )
+@app.get("/formulation/questions", tags=["Formulation"])
+async def get_questions_endpoint():
+    """Get the 2-3 question formulation classification questions."""
+    from ip_sakti.classification.formulation import get_formulation_questions
+    return {"questions": get_formulation_questions()}
+
+
+@app.post("/formulation/classify", tags=["Formulation"])
+async def classify_formulation_endpoint(answers: Dict[str, Any]):
+    """Classify product into classical | new_drug | cosmetic | other."""
+    from ip_sakti.classification.formulation import classify_formulation
+    raw_answers = answers.get("answers", answers) if isinstance(answers, dict) else {}
+    return classify_formulation(raw_answers)
+
+
+@app.post("/classify", tags=["Formulation"])
+async def classify_alias_endpoint(answers: Dict[str, Any]):
+    """Convenience alias for /formulation/classify."""
+    from ip_sakti.classification.formulation import classify_formulation
+    raw_answers = answers.get("answers", answers) if isinstance(answers, dict) else {}
+    return classify_formulation(raw_answers)
 
 
 @app.post("/query/stream", tags=["Query"])
@@ -896,6 +871,17 @@ async def list_experiments(
 # ROOT ENDPOINT
 # ============================================================
 
+@app.get("/app", tags=["UI"])
+@app.get("/ui", tags=["UI"])
+@app.get("/ip-sakti-sahayak.html", tags=["UI"])
+async def serve_ui():
+    """Serve the IP-SAKTI Sahayak web interface."""
+    html_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "ip-sakti-sahayak.html")
+    if os.path.exists(html_path):
+        return FileResponse(html_path, media_type="text/html")
+    raise HTTPException(status_code=404, detail="UI file not found")
+
+
 @app.get("/", tags=["Root"])
 async def root():
     """API root endpoint."""
@@ -903,6 +889,7 @@ async def root():
         "name": "IP-SAKTI Sahayak API",
         "version": "1.0.0",
         "description": "Indian Intellectual Property Legal Assistant",
+        "ui": "/app",
         "docs": "/docs",
         "health": "/health",
     }

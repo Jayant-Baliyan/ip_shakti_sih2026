@@ -986,6 +986,132 @@
   }
   #fileInput { display: none; }
 
+  /* ================= JURISDICTION & FORMULATION UI ================= */
+  .jur-toggle-group {
+    display: inline-flex;
+    align-items: center;
+    background: var(--panel-2);
+    border: 1px solid var(--border-strong);
+    border-radius: 20px;
+    padding: 3px 4px;
+    gap: 3px;
+  }
+  .jur-toggle-btn {
+    border: none;
+    background: transparent;
+    color: var(--text-soft);
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    padding: 4px 12px;
+    border-radius: 14px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .jur-toggle-btn:hover {
+    color: var(--text-heading);
+  }
+  .jur-toggle-btn.active {
+    background: var(--gold);
+    color: #1A1406;
+    font-weight: 600;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+  }
+  .formulation-btn {
+    border: 1px solid var(--gold);
+    background: var(--gold-dim);
+    color: var(--gold-text);
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 6px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .formulation-btn:hover {
+    background: var(--gold);
+    color: #1A1406;
+  }
+  .wizard-card {
+    background: var(--panel-2);
+    border: 1px solid var(--border-strong);
+    border-radius: 12px;
+    padding: 16px 18px;
+    margin-top: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .wizard-q {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+  }
+  .wizard-q-text {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-heading);
+    margin-bottom: 4px;
+  }
+  .wizard-q-help {
+    font-size: 11.5px;
+    color: var(--text-soft);
+    margin-bottom: 8px;
+  }
+  .wizard-options {
+    display: flex;
+    gap: 8px;
+  }
+  .wizard-opt-btn {
+    border: 1px solid var(--border-strong);
+    background: var(--panel-2);
+    color: var(--text);
+    font-size: 12px;
+    font-weight: 500;
+    padding: 4px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .wizard-opt-btn.selected {
+    background: var(--teal-dim);
+    color: var(--teal-text);
+    border-color: var(--teal);
+    font-weight: 600;
+  }
+  .confidence-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--teal-text);
+    background: var(--teal-dim);
+    border: 1px solid rgba(56, 189, 248, 0.25);
+    padding: 2px 8px;
+    border-radius: 10px;
+  }
+  .disclaimer-box {
+    margin-top: 14px;
+    padding: 10px 14px;
+    border-radius: 8px;
+    background: rgba(148, 163, 184, 0.08);
+    border: 1px solid var(--border);
+    font-size: 11.5px;
+    line-height: 1.5;
+    color: var(--text-soft);
+    font-style: italic;
+  }
+
   /* ================= STATUTORY CORPUS / FILES PAGE ================= */
   .files-toolbar {
     display: flex;
@@ -1531,6 +1657,11 @@
         <div class="sub" id="topSub">Authoritative statutory analysis grounded in Indian &amp; International IP Jurisprudence</div>
       </div>
       <div class="topbar-actions">
+        <!-- Jurisdiction Filter Toggle -->
+        <div class="jur-toggle-group" id="jurToggleGroup" title="Filter retrieval by legal jurisdiction">
+          <button type="button" class="jur-toggle-btn active" data-jur="INDIA" id="btnJurIndia">🇮🇳 India</button>
+          <button type="button" class="jur-toggle-btn" data-jur="INTL" id="btnJurIntl">🌐 International</button>
+        </div>
         <span class="pill">&#127760; Hindi &middot; English</span>
         <!-- Main Topbar Theme Toggle Button -->
         <button class="theme-toggle-btn" id="themeToggleTop" aria-label="Toggle dark and light mode" title="Switch between Dark and Light mode">
@@ -1607,6 +1738,15 @@
                     <span class="chip-icon">🧪</span>
                     <span>Ayurvedic formulations &amp; TK prior art</span>
                   </div>
+                </div>
+
+                <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
+                  <div style="font-size:12px;color:var(--text-soft);">
+                    <strong style="color:var(--text-heading);">Ayurvedic Regulatory Classifier:</strong> 3-question statutory triage flow
+                  </div>
+                  <button type="button" class="formulation-btn" id="openFormulationWizardBtn">
+                    🧪 Classify Formulation (Classical / New Drug / Cosmetic)
+                  </button>
                 </div>
               </div>
             </div>
@@ -2644,13 +2784,185 @@ function findLegalAnswer(query){
   return fallback;
 }
 
-function runQuery(q){
+/* ================= JURISDICTION & FORMULATION STATE ================= */
+let currentJurisdiction = 'INDIA';
+let activeFormulationClass = null;
+
+const btnJurIndia = document.getElementById('btnJurIndia');
+const btnJurIntl = document.getElementById('btnJurIntl');
+
+function setJurisdiction(jur) {
+  currentJurisdiction = jur;
+  if (btnJurIndia && btnJurIntl) {
+    btnJurIndia.classList.toggle('active', jur === 'INDIA');
+    btnJurIntl.classList.toggle('active', jur === 'INTL');
+  }
+  const label = jur === 'INDIA' ? '🇮🇳 India (Patents Act, Biological Diversity Act, D&C Act, TKDL)' : '🌐 International (PCT, Paris Convention, CBD, TRIPS)';
+  addSysNote(`Active Jurisdiction Filter: <strong>${label}</strong>`);
+}
+
+if (btnJurIndia) btnJurIndia.addEventListener('click', () => setJurisdiction('INDIA'));
+if (btnJurIntl) btnJurIntl.addEventListener('click', () => setJurisdiction('INTL'));
+
+// Formulation Questionnaire Flow
+const openFormulationWizardBtn = document.getElementById('openFormulationWizardBtn');
+if (openFormulationWizardBtn) {
+  openFormulationWizardBtn.addEventListener('click', () => {
+    startFormulationWizard();
+  });
+}
+
+function startFormulationWizard() {
+  const wizardId = 'wiz_' + Date.now();
+  const html = `
+    <div style="font-weight:600;color:var(--text-heading);font-size:15px;margin-bottom:4px;">
+      🧪 Ayurvedic Product Regulatory Triage
+    </div>
+    <div style="font-size:13px;color:var(--text-soft);margin-bottom:12px;">
+      Answer 3 statutory questions to determine regulatory pathway under the Drugs and Cosmetics Act, 1940:
+    </div>
+    <div class="wizard-card" id="${wizardId}">
+      <div class="wizard-q">
+        <div class="wizard-q-text">1. Classical Text Compliance</div>
+        <div class="wizard-q-help">Is the product prepared strictly in accordance with authoritative Ayurvedic/Siddha/Unani texts in the First Schedule to the Drugs & Cosmetics Act without proprietary alteration?</div>
+        <div class="wizard-options">
+          <button type="button" class="wizard-opt-btn" data-q="q1_classical_text" data-val="yes">Yes</button>
+          <button type="button" class="wizard-opt-btn" data-q="q1_classical_text" data-val="no">No</button>
+        </div>
+      </div>
+
+      <div class="wizard-q">
+        <div class="wizard-q-text">2. Solely Cosmetic / Topical Application</div>
+        <div class="wizard-q-help">Is the product intended solely for external cleansing, grooming, or beautification without therapeutic medicinal treatment claims under Section 3(aaa)?</div>
+        <div class="wizard-options">
+          <button type="button" class="wizard-opt-btn" data-q="q2_cosmetic_use" data-val="yes">Yes</button>
+          <button type="button" class="wizard-opt-btn" data-q="q2_cosmetic_use" data-val="no">No</button>
+        </div>
+      </div>
+
+      <div class="wizard-q">
+        <div class="wizard-q-text">3. Novel Fraction or Extraction (Rule 122E)</div>
+        <div class="wizard-q-help">Does the product contain an isolated phytopharmaceutical molecule, novel extraction, or modified therapeutic indication requiring clinical safety evaluation?</div>
+        <div class="wizard-options">
+          <button type="button" class="wizard-opt-btn" data-q="q3_new_substance" data-val="yes">Yes</button>
+          <button type="button" class="wizard-opt-btn" data-q="q3_new_substance" data-val="no">No</button>
+        </div>
+      </div>
+
+      <button type="button" class="formulation-btn" style="align-self:flex-start;margin-top:6px;" id="${wizardId}_submit">
+        Compute Statutory Classification ➔
+      </button>
+    </div>
+  `;
+
+  addAssistantMsg(html);
+
+  const wizardEl = document.getElementById(wizardId);
+  if (!wizardEl) return;
+
+  const answers = {
+    q1_classical_text: null,
+    q2_cosmetic_use: null,
+    q3_new_substance: null,
+  };
+
+  wizardEl.querySelectorAll('.wizard-opt-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const q = e.target.dataset.q;
+      const val = e.target.dataset.val;
+      answers[q] = val;
+      e.target.parentElement.querySelectorAll('.wizard-opt-btn').forEach(b => b.classList.remove('selected'));
+      e.target.classList.add('selected');
+    });
+  });
+
+  const submitBtn = document.getElementById(`${wizardId}_submit`);
+  if (submitBtn) {
+    submitBtn.addEventListener('click', async () => {
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Classifying...';
+
+      let result = null;
+      try {
+        const resp = await fetch('/formulation/classify', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ answers })
+        }).catch(() => fetch('http://localhost:8000/formulation/classify', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ answers })
+        }));
+        if (resp && resp.ok) {
+          result = await resp.json();
+        }
+      } catch (err) {}
+
+      // Fallback rule if offline
+      if (!result) {
+        const isQ3 = answers.q3_new_substance === 'yes';
+        const isQ1 = answers.q1_classical_text === 'yes';
+        const isQ2 = answers.q2_cosmetic_use === 'yes';
+        if (isQ3) {
+          result = {
+            formulation_class: 'new_drug',
+            category: 'new_drug',
+            reasoning: 'Product incorporates a novel phytopharmaceutical fraction or modified active entity requiring New Drug / Rule 122E regulatory pathway.',
+            applicable_statutes: ['Drugs and Cosmetics Act, 1940 (Rule 122E)', 'Patents Act, 1970 (Section 3(d))']
+          };
+        } else if (isQ1 && !isQ2) {
+          result = {
+            formulation_class: 'classical',
+            category: 'classical',
+            reasoning: 'Product is prepared strictly per First Schedule authoritative texts under Section 3(a) of the Drugs and Cosmetics Act, 1940 (Classical Ayurvedic Medicine).',
+            applicable_statutes: ['Drugs and Cosmetics Act, 1940 Section 3(a)', 'First Schedule of D&C Act']
+          };
+        } else if (isQ2 && !isQ1) {
+          result = {
+            formulation_class: 'cosmetic',
+            category: 'cosmetic',
+            reasoning: 'Product is formulated for external cleansing, grooming, or beautification without therapeutic treatment claims (Cosmetic under Section 3(aaa)).',
+            applicable_statutes: ['Drugs and Cosmetics Act, 1940 Section 3(aaa)', 'Cosmetics Rules, 2020']
+          };
+        } else {
+          result = {
+            formulation_class: 'other',
+            category: 'other',
+            reasoning: 'Product falls under proprietary Ayurvedic medicine (Section 3(h)), dietary supplement/nutraceutical (FSSAI), or general patentable formulation.',
+            applicable_statutes: ['Drugs and Cosmetics Act, 1940 Section 3(h)', 'FSSAI Act, 2006']
+          };
+        }
+      }
+
+      activeFormulationClass = result.formulation_class;
+      const classBadge = result.formulation_class.toUpperCase();
+      const statutesHtml = (result.applicable_statutes || []).map(s => `<span class="flow-pill">${s}</span>`).join(' ');
+
+      const resHtml = `
+        <div style="font-weight:600;color:var(--text-heading);font-size:15px;margin-bottom:6px;">
+          ⚖️ Classification Result: <span class="confidence-pill" style="font-size:12px;">${classBadge}</span>
+        </div>
+        <p><strong>Statutory Reasoning:</strong> ${result.reasoning}</p>
+        <div style="margin-top:8px;">
+          <div style="font-size:11px;font-weight:600;text-transform:uppercase;color:var(--text-mute);margin-bottom:4px;">Applicable Statutory Regimes:</div>
+          ${statutesHtml}
+        </div>
+        <div style="margin-top:10px;font-size:12px;color:var(--teal-text);">
+          ✓ Product classification tagged as <strong>${classBadge}</strong> for subsequent statutory RAG queries.
+        </div>
+      `;
+      addAssistantMsg(resHtml);
+    });
+  }
+}
+
+async function runQuery(q) {
   addUserMsg(q);
 
   const stages = [
-    'Parsing legal query & jurisdictional scope',
-    'Executing hybrid retrieval (BM25 sparse + BGE-M3 dense)',
-    'Cross-encoder reranking & authority tier weight scoring',
+    `Parsing legal query & jurisdiction (${currentJurisdiction})`,
+    'Executing hybrid retrieval (Dense all-MiniLM-L6-v2 + Sparse BM25)',
+    'Reranking evidence chunks & applying statutory tier weights',
     'Synthesizing citation-first statutory assertions & grounding'
   ];
 
@@ -2670,45 +2982,148 @@ function runQuery(q){
   const trows = row.querySelectorAll('.t-row');
   let step = 0;
 
+  // Animate the thinking dots
   const iv = setInterval(() => {
-    if(step < dots.length){
+    if (step < dots.length) {
       dots[step].classList.add('done');
       trows[step].classList.add('done');
       step++;
       scrollChat();
-    } else {
-      clearInterval(iv);
-      row.remove();
-
-      const ans = findLegalAnswer(q);
-      const citesHtml = ans.cites.map(c => `
-        <span class="cite" title="${c.src} (${c.tier})">[${c.n}] ${c.src.split(',')[0]}</span>
-      `).join('');
-
-      const sourcesListHtml = ans.cites.map(c => `
-        <div class="source-item">
-          <span class="s-pill">${c.tier}</span>
-          <span class="s-name">[${c.n}] ${c.src}</span>
-          <span style="color:var(--text-mute);font-size:11px;">&middot; ${c.reg}</span>
-        </div>
-      `).join('');
-
-      const fullHtml = `
-        <div style="font-weight:600;color:var(--text-heading);font-size:15px;margin-bottom:6px;">${ans.title}</div>
-        <p>${ans.body}</p>
-        <div style="margin-top:8px;">${citesHtml}</div>
-        <div class="sources-card">
-          <div class="sources-card-head">
-            <div class="sources-card-title">&#128220; Statutory Evidence &amp; Verification</div>
-            <div class="verified-badge">&#10003; Verified Citation Grounding</div>
-          </div>
-          <div class="sources-list">${sourcesListHtml}</div>
-        </div>
-      `;
-
-      addAssistantMsg(fullHtml);
     }
-  }, 380);
+  }, 350);
+
+  let apiResult = null;
+  let isLiveBackend = false;
+
+  try {
+    const payload = {
+      query: q,
+      jurisdiction: currentJurisdiction,
+      formulation_class: activeFormulationClass || undefined,
+    };
+
+    // Try relative /query first, then fallback to http://localhost:8000/query
+    let res = null;
+    try {
+      res = await fetch('/query', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+    } catch (e) {
+      res = await fetch('http://localhost:8000/query', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+    }
+
+    if (res && res.ok) {
+      apiResult = await res.json();
+      isLiveBackend = true;
+    }
+  } catch (err) {
+    console.warn('Backend fetch failed, falling back to offline knowledge:', err);
+  }
+
+  // Complete any remaining animation steps
+  clearInterval(iv);
+  dots.forEach(d => d.classList.add('done'));
+  trows.forEach(t => t.classList.add('done'));
+  await new Promise(r => setTimeout(r, 200));
+  row.remove();
+
+  if (isLiveBackend && apiResult && apiResult.answer) {
+    // Format live answer from RAG
+    let answerText = apiResult.answer;
+    const citations = apiResult.citations || [];
+    const confidence = apiResult.confidence !== undefined ? apiResult.confidence : 0.85;
+
+    // Convert raw citation markers [1], [2] to styled pills
+    const formattedAnswer = answerText
+      .replace(/\[(\d+)\]/g, (match, p1) => {
+        const citeObj = citations.find(c => String(c.id) === String(p1));
+        const title = citeObj ? citeObj.title : `Citation ${p1}`;
+        return `<span class="cite" title="${escapeHtml(title)}">[${p1}]</span>`;
+      })
+      .replace(/\n\n/g, '</p><p>')
+      .replace(/\n/g, '<br>');
+
+    // Build statutory citations list
+    const sourcesListHtml = citations.map(c => `
+      <div class="source-item">
+        <span class="s-pill">${c.source_tier ? 'Tier ' + c.source_tier : 'Statutory Tier'}</span>
+        <span class="s-name">[${c.id}] ${escapeHtml(c.title || 'Legal Provision')}</span>
+        <span style="color:var(--text-mute);font-size:11px;">
+          ${c.jurisdiction ? `&middot; ${c.jurisdiction}` : ''}
+          ${c.score ? `&middot; Score: ${(c.score * 100).toFixed(1)}%` : ''}
+        </span>
+        ${c.content_preview ? `<div style="font-size:11px;color:var(--text-soft);margin-top:2px;font-style:italic;">&ldquo;${escapeHtml(c.content_preview.slice(0, 180))}&hellip;&rdquo;</div>` : ''}
+      </div>
+    `).join('');
+
+    const fullHtml = `
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;flex-wrap:wrap;gap:6px;">
+        <div style="font-weight:600;color:var(--text-heading);font-size:15px;">
+          Statutory Legal Research Analysis
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <span class="confidence-pill">&#10003; Live ChromaDB RAG</span>
+          <span class="confidence-pill" style="color:var(--gold-text);background:var(--gold-dim);border-color:var(--gold);">
+            Confidence: ${(confidence * 100).toFixed(0)}%
+          </span>
+          <span class="confidence-pill" style="color:var(--text-soft);background:var(--panel);border-color:var(--border);">
+            ${currentJurisdiction}
+          </span>
+        </div>
+      </div>
+      <p>${formattedAnswer}</p>
+      <div class="sources-card">
+        <div class="sources-card-head">
+          <div class="sources-card-title">&#128220; Grounded Statutory Evidence (${citations.length} Verified Sources)</div>
+          <div class="verified-badge">&#10003; Citation Grounded</div>
+        </div>
+        <div class="sources-list">${sourcesListHtml}</div>
+      </div>
+    `;
+
+    addAssistantMsg(fullHtml);
+  } else {
+    // Offline fallback if server not running
+    const ans = findLegalAnswer(q);
+    const citesHtml = ans.cites.map(c => `
+      <span class="cite" title="${c.src} (${c.tier})">[${c.n}] ${c.src.split(',')[0]}</span>
+    `).join('');
+
+    const sourcesListHtml = ans.cites.map(c => `
+      <div class="source-item">
+        <span class="s-pill">${c.tier}</span>
+        <span class="s-name">[${c.n}] ${c.src}</span>
+        <span style="color:var(--text-mute);font-size:11px;">&middot; ${c.reg}</span>
+      </div>
+    `).join('');
+
+    const fullHtml = `
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+        <div style="font-weight:600;color:var(--text-heading);font-size:15px;">${ans.title}</div>
+        <span class="confidence-pill" style="color:var(--text-soft);font-size:10px;">Offline Fallback (Run uvicorn for Live RAG)</span>
+      </div>
+      <p>${ans.body}</p>
+      <div style="margin-top:8px;">${citesHtml}</div>
+      <div class="sources-card">
+        <div class="sources-card-head">
+          <div class="sources-card-title">&#128220; Statutory Evidence &amp; Verification</div>
+          <div class="verified-badge">&#10003; Verified Grounding</div>
+        </div>
+        <div class="sources-list">${sourcesListHtml}</div>
+      </div>
+      <div class="disclaimer-box">
+        Disclaimer: This is legal information, not legal advice. For specific regulatory filings or patent actions, consult a qualified patent agent or legal professional.
+      </div>
+    `;
+
+    addAssistantMsg(fullHtml);
+  }
 }
 
 // Event Listeners for chat

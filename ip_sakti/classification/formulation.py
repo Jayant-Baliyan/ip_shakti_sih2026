@@ -697,3 +697,115 @@ def create_classification_pipeline(
         **kwargs
     )
     return FormulationClassificationPipeline(config)
+
+
+# ============================================================
+# 2-3 QUESTION FORMULATION CLASSIFICATION FLOW (STEP 7)
+# ============================================================
+
+class RegulatoryCategory(str, Enum):
+    """Regulatory formulation categories."""
+    CLASSICAL = "classical"
+    NEW_DRUG = "new_drug"
+    COSMETIC = "cosmetic"
+    OTHER = "other"
+
+
+@dataclass
+class FormulationQuestion:
+    """A question in the formulation classification flow."""
+    id: str
+    question: str
+    help_text: str
+    options: List[str]
+
+
+class FormulationQuestionClassifier:
+    """
+    2-3 Question classification flow that labels a product as:
+    classical / new_drug / cosmetic / other
+    """
+
+    QUESTIONS = [
+        FormulationQuestion(
+            id="q1_classical_text",
+            question="Is the product prepared strictly in accordance with authoritative Ayurvedic/Siddha/Unani classical texts listed in the First Schedule to the Drugs and Cosmetics Act (e.g. Charaka Samhita, Sushruta Samhita) without proprietary modification?",
+            help_text="Under Section 3(a) of the Drugs & Cosmetics Act, 1940, classical medicines follow authoritative formulary texts without novel modification.",
+            options=["yes", "no"],
+        ),
+        FormulationQuestion(
+            id="q2_cosmetic_use",
+            question="Is the product intended solely for topical application, cleansing, grooming, or beautification without claiming medicinal prevention or treatment of disease?",
+            help_text="Under Section 3(aaa) of the Drugs & Cosmetics Act, cosmetics are intended for external application for beautification rather than therapeutic medicinal efficacy.",
+            options=["yes", "no"],
+        ),
+        FormulationQuestion(
+            id="q3_new_substance",
+            question="Does the product contain an isolated chemical fraction, new phytopharmaceutical molecule, novel extraction, or modified therapeutic indication requiring clinical trials under Rule 122E?",
+            help_text="Novel phytopharmaceuticals or synthetic/modified extracts are classified under New Drug regulations requiring preclinical/clinical safety evaluation.",
+            options=["yes", "no"],
+        ),
+    ]
+
+    def get_questions(self) -> List[Dict[str, Any]]:
+        """Return the list of questions for client questionnaires."""
+        return [
+            {
+                "id": q.id,
+                "question": q.question,
+                "help_text": q.help_text,
+                "options": q.options,
+            }
+            for q in self.QUESTIONS
+        ]
+
+    def classify_from_answers(self, answers: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Classifies product into classical | new_drug | cosmetic | other based on answers.
+        """
+        def is_yes(key: str) -> bool:
+            val = answers.get(key)
+            if isinstance(val, bool):
+                return val
+            if isinstance(val, str):
+                return val.strip().lower() in ("yes", "true", "1", "y")
+            return False
+
+        q1 = is_yes("q1_classical_text")
+        q2 = is_yes("q2_cosmetic_use")
+        q3 = is_yes("q3_new_substance")
+
+        if q3:
+            category = RegulatoryCategory.NEW_DRUG
+            reasoning = "Product incorporates a novel phytopharmaceutical fraction or modified active entity requiring New Drug / Rule 122E regulatory pathway."
+            applicable_statutes = ["Drugs and Cosmetics Act, 1940 (Rule 122E)", "Patents Act, 1970 (Section 3(d))"]
+        elif q1 and not q2:
+            category = RegulatoryCategory.CLASSICAL
+            reasoning = "Product is prepared strictly per First Schedule authoritative texts under Section 3(a) of the Drugs and Cosmetics Act, 1940 (Classical Ayurvedic Medicine)."
+            applicable_statutes = ["Drugs and Cosmetics Act, 1940 Section 3(a)", "First Schedule of D&C Act"]
+        elif q2 and not q1:
+            category = RegulatoryCategory.COSMETIC
+            reasoning = "Product is formulated for external cleansing, grooming, or beautification without therapeutic treatment claims (Cosmetic under Section 3(aaa))."
+            applicable_statutes = ["Drugs and Cosmetics Act, 1940 Section 3(aaa)", "Cosmetics Rules, 2020"]
+        else:
+            category = RegulatoryCategory.OTHER
+            reasoning = "Product falls under proprietary Ayurvedic medicine (Section 3(h)), dietary supplement/nutraceutical (FSSAI), or general patentable formulation."
+            applicable_statutes = ["Drugs and Cosmetics Act, 1940 Section 3(h)", "FSSAI Act, 2006"]
+
+        return {
+            "formulation_class": category.value,
+            "category": category.value,
+            "reasoning": reasoning,
+            "applicable_statutes": applicable_statutes,
+            "answers_provided": answers,
+        }
+
+
+# Global helper instances
+_question_classifier = FormulationQuestionClassifier()
+
+def get_formulation_questions() -> List[Dict[str, Any]]:
+    return _question_classifier.get_questions()
+
+def classify_formulation(answers: Dict[str, Any]) -> Dict[str, Any]:
+    return _question_classifier.classify_from_answers(answers)

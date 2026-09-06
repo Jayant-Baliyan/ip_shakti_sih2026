@@ -69,19 +69,30 @@ class TextLoaderWrapper(BaseDocumentLoader):
         return self._loader_class
     
     async def load(self, file_path: str) -> List[LoadedDocument]:
-        loader_class = self._get_loader()
-        loader = loader_class(file_path, encoding=self.encoding)
-        docs = loader.load()
-        
-        return [
-            LoadedDocument(
-                content=doc.page_content,
-                metadata=doc.metadata,
-                source_path=file_path,
-                format=DocumentFormat.TXT,
-            )
-            for doc in docs
-        ]
+        try:
+            loader_class = self._get_loader()
+            loader = loader_class(file_path, encoding=self.encoding)
+            docs = loader.load()
+            return [
+                LoadedDocument(
+                    content=doc.page_content,
+                    metadata=doc.metadata,
+                    source_path=file_path,
+                    format=DocumentFormat.TXT,
+                )
+                for doc in docs
+            ]
+        except Exception:
+            with open(file_path, 'r', encoding=self.encoding, errors='ignore') as f:
+                content = f.read()
+            return [
+                LoadedDocument(
+                    content=content,
+                    metadata={'source': file_path},
+                    source_path=file_path,
+                    format=DocumentFormat.TXT,
+                )
+            ]
     
     def supports_format(self, format: DocumentFormat) -> bool:
         return format == DocumentFormat.TXT
@@ -100,15 +111,35 @@ class PDFLoaderWrapper(BaseDocumentLoader):
         return self._loader_class
     
     async def load(self, file_path: str) -> List[LoadedDocument]:
+        # If sibling .txt file exists, load that directly
+        txt_sibling = Path(file_path).with_suffix(".txt")
+        if txt_sibling.exists() and txt_sibling.resolve() != Path(file_path).resolve():
+            try:
+                with open(txt_sibling, 'r', encoding='utf-8', errors='ignore') as f:
+                    txt = f.read()
+                if txt.strip():
+                    return [
+                        LoadedDocument(
+                            content=txt,
+                            metadata={'source': str(txt_sibling)},
+                            source_path=str(txt_sibling),
+                            format=DocumentFormat.TXT,
+                        )
+                    ]
+            except Exception:
+                pass
+
         loader_class = self._get_loader()
         try:
             loader = loader_class(file_path)
             docs = loader.load()
         except Exception as e:
             # Fallback to HTML loader for files with .pdf extension that are actually HTML
-            logger.warning(f"PyPDFLoader failed for {file_path}: {e}, trying HTML loader")
+            logger.warning(f"PyPDFLoader failed for {file_path}: {e}, trying HTML or raw text fallback")
             if not HAS_BS4:
-                raise ImportError("BeautifulSoup4 not installed. Install with: pip install beautifulsoup4")
+                with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
+                    content = f.read()
+                return [LoadedDocument(content=content, metadata={'source': file_path}, source_path=file_path, format=DocumentFormat.PDF)]
             
             with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
                 html_content = f.read()

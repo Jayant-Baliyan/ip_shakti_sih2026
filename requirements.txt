@@ -1,0 +1,11 @@
+fastapi
+uvicorn
+langchain-text-splitters
+langchain-community
+pydantic
+PyYAML
+sentence-transformers
+chromadb
+rank-bm25
+openai
+python-dotenv

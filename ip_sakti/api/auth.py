@@ -13,7 +13,12 @@ from uuid import uuid4
 
 from fastapi import Depends, Header, HTTPException, Request, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer, OAuth2PasswordBearer
-from jose import JWTError, jwt
+try:
+    from jose import JWTError, jwt
+except ImportError:
+    class JWTError(Exception):
+        pass
+    jwt = None
 from pydantic import BaseModel
 
 from ip_sakti.config.loader import Settings, get_settings

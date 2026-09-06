@@ -98,12 +98,16 @@ class SourceType(str, Enum):
 class JurisdictionCode(str, Enum):
     """Jurisdiction identifiers."""
     INDIA = "INDIA"
+    IN = "INDIA"
     US = "US"
     EP = "EP"
     WO = "WO"
     UK = "UK"
     CN = "CN"
     JP = "JP"
+    DE = "DE"
+    FR = "FR"
+    KR = "KR"
     INTERNATIONAL = "INTERNATIONAL"
     # Indian states/UTs
     ANDHRA_PRADESH = "IN-AP"
@@ -979,6 +983,39 @@ class IngestionJob:
 # Aliases for backward compatibility
 Jurisdiction = JurisdictionCode
 SourceAuthorityTier = AuthorityTier
+
+
+class FormulationType(str, Enum):
+    """Formulation type and section classification."""
+    CLAIM = "claim"
+    ABSTRACT = "abstract"
+    DESCRIPTION = "description"
+    DRAWINGS = "drawings"
+    BACKGROUND = "background"
+    SUMMARY = "summary"
+    CLASSICAL = "classical"
+    NEW_DRUG = "new_drug"
+    COSMETIC = "cosmetic"
+    OTHER = "other"
+
+
+class TechnicalDomain(str, Enum):
+    """Technical domain classification."""
+    MECHANICAL = "mechanical"
+    ELECTRICAL = "electrical"
+    CHEMICAL = "chemical"
+    BIOTECHNOLOGY = "biotechnology"
+    COMPUTER_SOFTWARE = "computer_software"
+    PHARMACEUTICAL = "pharmaceutical"
+    MATERIALS = "materials"
+    TELECOMMUNICATIONS = "telecommunications"
+    AUTOMOTIVE = "automotive"
+    AEROSPACE = "aerospace"
+    ENERGY = "energy"
+    ENVIRONMENTAL = "environmental"
+
+
+FormulationCategory = FormulationType
 
 
 class RetrievalStrategy(str, Enum):

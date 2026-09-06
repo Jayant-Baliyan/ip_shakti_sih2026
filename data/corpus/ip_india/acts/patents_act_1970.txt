@@ -1,57 +1,96 @@
-﻿ Copyright (Amendment) Act, 1999 (Act No. 49 of 1999)   
+THE PATENTS ACT, 1970
+(Act No. 39 of 1970, as amended by Patents (Amendment) Act, 2005)
+
+An Act to amend and consolidate the law relating to patents.
+
+CHAPTER I - PRELIMINARY
+
+Section 1. Short title, extent and commencement.
+(1) This Act may be called the Patents Act, 1970.
+(2) It extends to the whole of India.
+
+Section 2. Definitions and interpretation.
+(1) In this Act, unless the context otherwise requires,-
+(j) "invention" means a new product or process involving an inventive step and capable of industrial application;
+(ja) "inventive step" means a feature of an invention that involves technical advance as compared to the existing knowledge or having economic significance or both and that makes the invention not obvious to a person skilled in the art;
+(l) "new invention" means any invention or technology which has not been anticipated by publication in any document or used in the country or elsewhere in the world before the date of filing of patent application with complete specification, that is to say, the subject-matter has not fallen in public domain or that it does not form part of the state of the art;
+(m) "patent" means a patent for any invention granted under this Act;
+(ta) "pharmaceutical substance" means any new entity involving one or more inventive steps;
+(y) "true and first inventor" does not include either the first importer of an invention into India, or a person to whom an invention is first communicated from outside India.
+
+CHAPTER II - INVENTIONS NOT PATENTABLE
+
+Section 3 of the Patents Act, 1970: What are not inventions.
+The following are not inventions within the meaning of the Patents Act, 1970:
+
+Section 3(a) of the Patents Act, 1970: An invention which is frivolous or which claims anything obviously contrary to well established natural laws.
+
+Section 3(b) of the Patents Act, 1970: An invention the primary or intended use or commercial exploitation of which could be contrary to public order or morality or which causes serious prejudice to human, animal or plant life or health or to the environment.
+
+Section 3(c) of the Patents Act, 1970: The mere discovery of a scientific principle or the formulation of an abstract theory or discovery of any living thing or non-living substance occurring in nature.
+
+Section 3(d) of the Patents Act, 1970: The mere discovery of a new form of a known substance which does not result in the enhancement of the known efficacy of that substance or the mere discovery of any new property or new use for a known substance or of the mere use of a known process, machine or apparatus unless such known process results in a new product or employs at least one new reactant. Explanation to Section 3(d): For the purposes of this clause, salts, esters, ethers, polymorphs, metabolites, pure form, particle size, isomers, mixtures of isomers, complexes, combinations and other derivatives of known substance shall be considered to be the same substance, unless they differ significantly in properties with regard to efficacy (efficacy in the case of pharmaceutical and medicinal substances means therapeutic efficacy as affirmed by the Supreme Court of India in Novartis AG v. Union of India).
+
+Section 3(e) of the Patents Act, 1970: A substance obtained by a mere admixture resulting only in the aggregation of the properties of the components thereof or a process for producing such substance.
+
+Section 3(f) of the Patents Act, 1970: The mere arrangement or re-arrangement or duplication of known devices each functioning independently of one another in a known way.
+
+Section 3(h) of the Patents Act, 1970: A method of agriculture or horticulture.
+
+Section 3(i) of the Patents Act, 1970: Any process for the medicinal, surgical, curative, prophylactic, diagnostic, therapeutic or other treatment of human beings or any process for a similar treatment of animals to render them free of disease or to increase their economic value or that of their products.
+
+Section 3(j) of the Patents Act, 1970: Plants and animals in whole or any part thereof other than micro-organisms but including seeds, varieties and species and essentially biological processes for production or propagation of plants and animals.
+
+Section 3(k) of the Patents Act, 1970: A mathematical or business method or a computer programme per se or algorithms.
+
+Section 3(l) of the Patents Act, 1970: A literary, dramatic, musical or artistic work or any other aesthetic creation whatsoever including cinematographic works and television productions.
+
+Section 3(m) of the Patents Act, 1970: A mere scheme or rule or method of performing mental act or method of playing game.
+
+Section 3(n) of the Patents Act, 1970: A presentation of information.
+
+Section 3(o) of the Patents Act, 1970: Topography of integrated circuits.
+
+Section 3(p) of the Patents Act, 1970: An invention which in effect, is traditional knowledge or which is an aggregation or duplication of known properties of traditionally known component or components, including Ayurvedic formulations, Siddha, Unani, and traditional knowledge documented in the Traditional Knowledge Digital Library (TKDL).
 
 
-Short ti tie and commence­ ment.
-Amendment of section Z.
-Amendment of section 14.
-Amendment of section 38.
-Insertion of new section 40A.
-Power of Cen­ tral Govern­ ment to apply Chapter Vlll to broadcasting organisations and performers in certain other countries.
-THE COPYRIGHT (AMENDMENT) ACT,1999
-No. 49 OF 1999
-[3QthDecember, 1999.]
-An Act further to amend the Copyright Act, 1957.
-BE it' enacted by Parliament in the Fiftieth Year _of the Republic of India as follows:­ .
-1. (1). This Act may be called the Copyright (Amendment) Act, 1999.
-. (2) ,Itshall come into ·force on §Uch*date as the' Central Government may, by notification in the Official Gazette, appoint.
-2. In the Copyright Act, 1957 (hereinafter referred to as the principal Act), 14 of 195?. in section 2, in clause (o), for the words "data basis", the word "databases" shall be substituted.
-3. In section 14 of the principal Act, in clause (b),·f9r sub-clause (ii), the following shall be substituted, namely:- ·
-"(ii) to sell or give on commercial rental or offer for sale or for commercial _ rental any ropy of the computer programme:
-Provided that such commercial rental does rtot apply in respect of computer programmes where the programme itself is not the essential object of the rental.".
-4. In section 38 of the principal Act, in sub-section (2), for the words "twenty-five years", the words "fifty years" shall be substituted.·
-5, After section 40 of the principal Act, the following section sl:lall be inserted, ~~~ .
-"40A. (J) If the Central Government is satisfied that a foreign country (other . than a country with which India has entered into a treaty or which is a party to a convention relating to rights of broadcasting organisations and performers to which India is also a party) has made or has undertaken to make such provisions, if any, as it appears to the Central Government expedient to require, for the protection in that
+Section 4. Inventions relating to atomic energy not patentable.
+No patent shall be granted in respect of an invention relating to atomic energy falling within sub-section (1) of section 20 of the Atomic Energy Act, 1962 (33 of 1962).
 
+CHAPTER III - APPLICATIONS FOR PATENTS
 
+Section 6. Persons entitled to apply for patents.
+(1) Subject to the provisions contained in section 134, an application for a patent for an invention may be made by any of the following persons:
+(a) by any person claiming to be the true and first inventor of the invention;
+(b) by any person being the assignee of the person claiming to be the true and first inventor in respect of the right to make such an application;
+(c) by the legal representative of any deceased person who immediately before his death was entitled to make such an application.
 
+Section 10 of the Patents Act, 1970: Contents of specifications.
+(1) Every specification, whether provisional or complete, shall describe the invention.
+(4) Every complete specification shall:
+(a) fully and particularly describe the invention and its operation or use and the method by which it is to be performed;
+(b) disclose the best method of performing the invention which is known to the applicant and for which he is entitled to claim protection;
+(c) end with a claim or claims defining the scope of the invention for which protection is claimed;
+(d) be accompanied by an abstract to provide technical information on the invention.
+Provided that if the applicant mentions a biological material in the specification which may not be described in such a way as to satisfy clauses (a) and (b), the applicant shall deposit the material with an international depository authority, and under Section 10(4)(d)(ii)(D) disclose the source and geographical origin of the biological material in the specification, when used in an invention.
 
-[Acr49 OF 1999) Copy Right (Amendment) . 357
-foreign country, of the rights of broadcasting organisations and performers as is avajlable under this Act, it may, by order published in the Official Gazette, direct that the provisions of Chapter VIII shall apply­
-(a) to broadcasting organisations whose headquarters is situated in a coun­ try to which the order relates or, the broadcast was transmitted from a transmitter situated in a country .to which. the order relates as if the headquarters of such organisation were situated in India or such broadcast were made from India;
-(h) to performances that took place outside India to which the order relates in like manner as if they took place in India;
-(c) to performances that are incorporated in a sound recording published in a country to which the order relates as if it were published in India;
-(d) to performances not fixed on a sound recording broad~ast by a broadcasting organisation the headquarters of whic;:h is located in a country to • which the order relates or where the broadc~t is transmitted from a transmitter which is situated in a country to which the order relates as if the headquarters of such organisation were situated in India or such broadcast were made from India.
-(2) Every order made under sub-section (1) may provide that­
-(i) the provisions of Chapter VIII shall apply either generally or in relation to such class or classes of broadca~ts or performances or such other class or' classes of cases as may be specified in the order;
-(ii) the tenn of the rights of broadcasting organisations and performers in India shall not exceed such term as is conferred by the law of the country to which the order relates;
-(iii) the enjoyment of the rights conferred by Chapter VIII shall be subject to the accomplishment of such conditions and formalities, if any, as may be specified in that order; ·
-(iv) Chapter VIII or any part thereof shall nO( apply to broadcast and perfonnances made before the commencement of the order or that Chapter VIII or any part thereof shall not apply to broadcasts and performances broadcast or performed before the commencement of the order;
-(v) in case of ownership ~f rights of broadcasting organisations and performers, the provis'ions of Chapter VIII shall apply with such exceptions. and modifications as the Central Government may, having regard to the law of the foreign country, consider necessary.".
-6. After section 42 of the principal Act, the following section shall be inserted, , Insertion of namely:- new section
-42A. "42A. If it appears to the Central Government that a foreign country does not Power to
-give or has not undertaken to give adequate protection to rights of .broadcasting restrict rights of foreignorganisations or performers, the Central Governmentmay, by order published in broadcasting
-the Official Gazette, direct that such of the provisions of this Act as confer right to organisations broadcasting organisations or perfonners, as the case rnay be, shall not apply to and perfor­ broadcasting organisations or perfonners whereof are based or incorporated in such mers. foreign country or are subjects or citizens. of such foreign country and are not incorporated or domiciled in India, and thereupon those provisions shall not apply to such broadcasting organisations or perfonners.".
-7. In section 52 of the principal Act, in sub-section (1),­
+CHAPTER V - OPPOSITION TO GRANT OF PATENT
 
+Section 25 of the Patents Act, 1970: Opposition to the patent.
+(1) Where an application for a patent has been published but a patent has not been granted, any person may, in writing, represent by way of pre-grant opposition to the Controller against the grant of patent on the ground:
+(d) that the invention so far as claimed in any claim of the complete specification was publicly known or publicly used in India before the priority date of that claim;
+(e) that the invention so far as claimed in any claim of the complete specification is obvious and clearly does not involve any inventive step;
+(f) that the subject of any claim of the complete specification is not an invention within the meaning of this Act, or is not patentable under this Act (including Section 3(d), 3(e), and 3(p));
+(j) that the complete specification does not disclose or wrongly mentions the source or geographical origin of biological material used for the invention;
+(k) that the invention so far as claimed in any claim of the complete specification was anticipated having regard to the knowledge, oral or otherwise, available within any local or indigenous community in India or elsewhere (Traditional Knowledge / TKDL prior art).
 
+CHAPTER VIII - GRANT OF PATENTS AND RIGHTS CONFERRED
 
+Section 48 of the Patents Act, 1970: Rights of patentees.
+Subject to the other provisions contained in this Act and the conditions specified in section 47, a patent granted under this Act shall confer upon the patentee:
+(a) where the subject-matter of the patent is a product, the exclusive right to prevent third parties, who do not have his consent, from the act of making, using, offering for sale, selling or importing for those purposes that product in India;
+(b) where the subject-matter of the patent is a process, the exclusive right to prevent third parties, who do not have his consent, from the act of using that process, and from the act of using, offering for sale, selling or importing for those purposes the product obtained directly by that process in India.
 
-358 Copy -Right (Amendment) (ACT 49 OF 1999]
-Amendment of section 52.
-7. In section 52" of the prin~ipal Act, in sub-section (I),_,_
-(a) after clause (aa), the followingclauses shall be inserted, namely:­
-"(ab) the doing of any act necessary to obtain information essential for operating inter-operability of an independently created,computer programme with other· programmes by a lawful possessor of a computer programme provided that such information is not otherwise readily available;
-(ac) the observation, study or test of functioning of the computer .programipe in order to determine the ideas and principles w,hich underline any elements oftjhe programme while performing such acts necessary for the functions for which the computer programme was supplied;
-(ad) the making of copies or adaptation of the computer programme from a personally legally qbtained copy for non-commercial personal use;";
-(b) in the proviso to clause (p), for the words "fifty years", the words "sixty years" shall be sul::)stituted.
+Section 53 of the Patents Act, 1970: Term of patent.
+(1) Subject to the provisions of this Act, the term of every patent granted, after the commencement of the Patents (Amendment) Act, 2002, and the term of every patent which has not expired and has not ceased to have effect, on the date of such commencement, under this Act, shall be twenty years from the date of filing of the application for the patent.
 
