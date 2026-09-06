@@ -377,7 +377,7 @@ class CitationFirstGenerator:
 
                 for model_attempt in candidate_models:
                     try:
-                        logger.info(f"Calling LLM ({base_url or 'default'}) using model '{model_attempt}' (max_tokens=650)")
+                        logger.info(f"Calling LLM ({base_url or 'default'}) using model '{model_attempt}' (max_tokens=2000)")
                         response = await client.chat.completions.create(
                             model=model_attempt,
                             messages=[
@@ -385,7 +385,7 @@ class CitationFirstGenerator:
                                 {"role": "user", "content": user_prompt},
                             ],
                             temperature=0.1,
-                            max_tokens=650,
+                            max_tokens=2000,
                         )
                         if response.choices and response.choices[0].message.content:
                             answer = response.choices[0].message.content.strip()
